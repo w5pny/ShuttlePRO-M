@@ -13,7 +13,8 @@ OBJ=\
 all: shuttlepro
 
 install: all
-	install shuttle shuttlepro ${INSTALL_DIR}
+	install shuttle ${INSTALL_DIR}
+	install -s shuttlepro ${INSTALL_DIR}
 
 shuttlepro: ${OBJ}
 	gcc ${CFLAGS} ${OBJ} -o shuttlepro -L /usr/X11R6/lib -lX11 -lXtst

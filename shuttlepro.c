@@ -21,7 +21,7 @@ extern int debug_regex;
 extern translation *default_translation;
 
 unsigned short jogvalue = 0xffff;
-int shuttlevalue = 0xffff;
+int shuttlevalue = 0;
 struct timeval last_shuttle;
 int need_synthetic_shuttle;
 Display *display;
@@ -119,10 +119,12 @@ shuttle(int value, translation *tr)
   } else {
     gettimeofday(&last_shuttle, 0);
     need_synthetic_shuttle = value != 0;
-    if( value != shuttlevalue ) {
-      shuttlevalue = value;
-      send_stroke_sequence(tr, KJS_SHUTTLE, value+7);
-    }
+    // Treat shuttle commands as TRANSITIONS from one shuttle state to another
+    if ( shuttlevalue < value ) 
+      send_stroke_sequence(tr, KJS_SHUTTLE, abs(value)+7);
+    else if ( shuttlevalue > value )
+      send_stroke_sequence(tr, KJS_SHUTTLE, 7-abs(value));
+    shuttlevalue = value;
   }
 }
 
@@ -176,6 +178,8 @@ jogshuttle(unsigned short code, unsigned int value, translation *tr)
     break;
   case EVENT_CODE_SHUTTLE:
     shuttle(value, tr);
+    break;
+  case EVENT_CODE_SHUTTLE_HI_RES:
     break;
   default:
     fprintf(stderr, "jogshuttle(%d, %d) invalid code\n", code, value);
